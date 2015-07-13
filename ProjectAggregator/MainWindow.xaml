@@ -1,0 +1,31 @@
+﻿<Window x:Class="ProjectAggregator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Project Aggregator" Height="350" Width="525">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="75"/>
+            <ColumnDefinition Width="15"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Solution:" HorizontalAlignment="Right"/>
+        <TextBox Grid.Column="2"/>
+
+        <TextBlock Grid.Row="1" Text="Filter" HorizontalAlignment="Right"/>
+        <TextBox Grid.Row="1" Grid.Column="2"/>
+
+        <TextBlock Grid.Row="2" Text="Output:"/>
+        <TextBox Grid.Row="3" Grid.ColumnSpan="3" IsReadOnly="True"/>
+
+        <Button Grid.Row="4" Grid.ColumnSpan="3" Content="Aggregate"/>
+
+    </Grid>
+</Window>
