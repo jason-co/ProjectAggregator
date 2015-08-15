@@ -9,7 +9,7 @@
         d:DataContext="{d:DesignInstance viewModel:MainViewModel}">
     <Grid Margin="12">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="75"/>
+            <ColumnDefinition Width="125"/>
             <ColumnDefinition Width="15"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -17,25 +17,41 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Solution:" HorizontalAlignment="Right"/>
-        <TextBox Grid.Column="2" IsReadOnly="True"
+        <TextBlock Text="Visual Studio Version:" HorizontalAlignment="Right"/>
+        <ComboBox Grid.Column="2" Margin="0,0,0,4"
+                 ItemsSource="{Binding VisualStudioVersions}"
+                  SelectedItem="{Binding SelectedVisualStudioVersion}"/>
+
+        <TextBlock Grid.Row="1" Text="Solution:" HorizontalAlignment="Right"/>
+        <TextBox Grid.Row="1" Grid.Column="2" IsReadOnly="True"
                  Text="{Binding SolutionFileName}"/>
 
-        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Margin="0,4,0,0">
+        <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Margin="0,4,0,4">
             <Button Content="Open" Padding="8,0,8,0" Margin="0,0,8,0"
                     Command="{Binding OpenSolutionCommand}"/>
             <Button Content="Create" Padding="8,0,8,0" Margin="0,0,8,0"
                     Command="{Binding CreateSolutionCommand}"/>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="Output:"/>
-        <TextBox Grid.Row="3" Grid.ColumnSpan="3" IsReadOnly="True"/>
+        <TextBlock Grid.Row="3" Text="Root Folder:" HorizontalAlignment="Right"/>
+        <TextBox Grid.Row="3" Grid.Column="2" IsReadOnly="True"
+                 Text="{Binding RootFolderPath}"/>
 
-        <Button Grid.Row="4" Grid.ColumnSpan="3" Content="Aggregate" Margin="0,8,0,0" Padding="4"/>
+        <Button Grid.Row="4" Grid.Column="2" Content="Open" Padding="8,0,8,0" Margin="0,4,0,0"
+                    Command="{Binding SelectFolderCommand}" HorizontalAlignment="Left"/>
+
+        <TextBlock Grid.Row="5" Text="Output:"/>
+        <TextBox Grid.Row="6" Grid.ColumnSpan="3" IsReadOnly="True"/>
+
+        <Button Grid.Row="7" Grid.ColumnSpan="3" Content="Aggregate" Margin="0,8,0,0" Padding="4"
+                Command="{Binding AggregateCommand}"/>
 
     </Grid>
 </Window>
