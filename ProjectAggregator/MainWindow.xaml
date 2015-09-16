@@ -41,14 +41,26 @@
         </StackPanel>
 
         <TextBlock Grid.Row="3" Text="Root Folder:" HorizontalAlignment="Right"/>
-        <TextBox Grid.Row="3" Grid.Column="2" IsReadOnly="True"
+        <TextBox Grid.Row="3" Grid.Column="2"
                  Text="{Binding RootFolderPath}"/>
 
         <Button Grid.Row="4" Grid.Column="2" Content="Open" Padding="8,0,8,0" Margin="0,4,0,0"
                     Command="{Binding SelectFolderCommand}" HorizontalAlignment="Left"/>
 
         <TextBlock Grid.Row="5" Text="Output:"/>
-        <TextBox Grid.Row="6" Grid.ColumnSpan="3" IsReadOnly="True"/>
+        <ListBox Grid.Row="6" Grid.ColumnSpan="3" ItemsSource="{Binding Logger.Logs}" Loaded="ListBox_OnLoaded">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                <ContentPresenter Margin="8,2,4,2"/>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListBox.ItemContainerStyle>
+        </ListBox>
 
         <Button Grid.Row="7" Grid.ColumnSpan="3" Content="Aggregate" Margin="0,8,0,0" Padding="4"
                 Command="{Binding AggregateCommand}"/>

@@ -1,28 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ProjectAggregator
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
+        private ListBox _listBox;
+        private ScrollViewer _scrollViewer;
+
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void ListBox_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _listBox = (ListBox)sender;
+            var border = (Border)VisualTreeHelper.GetChild(_listBox, 0);
+            _scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild(border, 0);
+            var collection = (INotifyCollectionChanged)_listBox.ItemsSource;
+            collection.CollectionChanged += Collection_CollectionChanged;
+        }
+
+        private void Collection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                _scrollViewer.ScrollToBottom();
+            }
         }
     }
 }

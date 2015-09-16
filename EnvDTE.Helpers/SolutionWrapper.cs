@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Core;
 
 namespace EnvDTE.Helpers
 {
@@ -10,22 +11,25 @@ namespace EnvDTE.Helpers
     {
         #region fields
 
+        private const string SolutionBusyMessage = "(RPC_E_SERVERCALL_RETRYLATER)";
+        private const int SolutionWaitTimeInMS = 3000;
+
         private readonly string[] _projectExtensions = { ".csproj", ".vbproj" };
 
         private readonly IList<ProjectWrapper> _projectWrappers;
 
         private readonly DTE _dte;
         private readonly string _solutionName;
-        private readonly VisualStudioVersion _visualStudioVersion;
+        private readonly ILogger _logger;
 
         #endregion
 
         #region constructor
 
-        public SolutionWrapper(string solutionName, VisualStudioVersion visualStudioVersion)
+        public SolutionWrapper(string solutionName, VisualStudioVersion visualStudioVersion, ILogger logger)
         {
             _solutionName = solutionName;
-            _visualStudioVersion = visualStudioVersion;
+            _logger = logger;
             _projectWrappers = new List<ProjectWrapper>();
             _dte = EnvDTEFactory.Create(visualStudioVersion);
         }
@@ -37,18 +41,25 @@ namespace EnvDTE.Helpers
         public async Task<bool> AggregateProjects(string rootPath, int iterations = 15)
         {
             var missingProjects = GetProjectsMissingFromSolution(rootPath).ToArray();
+
+            Console.WriteLine();
             if (missingProjects.Any())
             {
                 await OpenSolution();
 
-                for (int i = 0; i < iterations; i++)
+                _logger.Log("Attempting to add all projects in {0} attempts", iterations);
+                for (int i = 0; i < iterations && missingProjects.Any(); i++)
                 {
-                    //Console.WriteLine("\n************\nIteration{0}\n************\n", i + 1);
+                    _logger.Log("************ Attempt {0} ************", i + 1);
+
+                    _logger.Log("Number of projects missing from the solution: {0}", missingProjects.Count());
+
                     AddProjects(missingProjects);
+
+                    missingProjects = missingProjects.Where(p => _projectWrappers.All(pw => pw.FullName != p.FullName)).ToArray();
                 }
 
                 await SaveAsync();
-
                 await CloseAsync();
 
                 return true;
@@ -89,9 +100,7 @@ namespace EnvDTE.Helpers
                         if (line.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             var split = line.Split(new[] { "\"" }, StringSplitOptions.RemoveEmptyEntries);
-                            var projectFile = split.FirstOrDefault(s =>
-                                s.IndexOf("proj", StringComparison.OrdinalIgnoreCase) >= 0
-                                && s.IndexOf("project", StringComparison.OrdinalIgnoreCase) < 0);
+                            var projectFile = split.FirstOrDefault(s => s.EndsWith("proj", StringComparison.OrdinalIgnoreCase));
                             var projectName = projectFile.Split(new[] { "\\" }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
 
                             projects.Add(projectName);
@@ -99,6 +108,7 @@ namespace EnvDTE.Helpers
                     }
                 }
 
+                _logger.Log("Number of projects currently in the solution: {0}", projects.Count());
             }
 
             return projects;
@@ -108,7 +118,85 @@ namespace EnvDTE.Helpers
         {
             var directoryInfo = new DirectoryInfo(rootPath);
 
-            return directoryInfo.EnumerateFiles().Where(f => _projectExtensions.Contains(f.Extension)).ToArray();
+            return directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => _projectExtensions.Contains(f.Extension)).ToArray();
+        }
+
+        #endregion
+
+        #region Add Projects
+
+        private void AddProjects(FileInfo[] missingProjects)
+        {
+            foreach (var project in missingProjects)
+            {
+                try
+                {
+                    if (_projectWrappers.All(p => p.FullName != project.FullName))
+                    {
+                        AddProjectFromFile(project.FullName);
+                        _logger.Log("\tProject Added: {0}", project.Name);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (ex.Message.Contains(SolutionBusyMessage))
+                    {
+                        _logger.Log("Solution busy... Waiting {0} seconds", SolutionWaitTimeInMS / 1000);
+                        System.Threading.Thread.Sleep(SolutionWaitTimeInMS);
+                    }
+                }
+            }
+        }
+
+        private void AddProjectFromFile(string fileName)
+        {
+            var project = _dte.Solution.AddFromFile(fileName, false);
+            var wrapper = new ProjectWrapper(project);
+            _projectWrappers.Add(wrapper);
+        }
+
+        #endregion
+
+        #region Solution Open/Save/Close
+
+        private async Task OpenSolution()
+        {
+            if (!File.Exists(_solutionName))
+            {
+                _logger.Log("Since solution does not exist, creating dummy placeholder");
+                await SaveAsync();
+            }
+            else
+            {
+                _logger.Log("Solution already exists");
+            }
+
+            _dte.Solution.Open(_solutionName);
+
+            await AttemptTo(CreateProjectWrappers);
+        }
+
+        private async Task SaveAsync()
+        {
+            _logger.Log("Saving Solution");
+            await AttemptTo(() => SaveInternal(_solutionName));
+        }
+
+        private void SaveInternal(string filePath)
+        {
+            _dte.Solution.SaveAs(filePath);
+        }
+
+        private async Task CloseAsync()
+        {
+            _logger.Log("Closing Solution");
+            await AttemptTo(CloseInternal);
+        }
+
+        private void CloseInternal()
+        {
+            _dte.Solution.Close();
+            _dte.Quit();
         }
 
         #endregion
@@ -147,75 +235,6 @@ namespace EnvDTE.Helpers
 
         #endregion
 
-        #region Add Projects
-
-        private void AddProjects(FileInfo[] missingProjects)
-        {
-            foreach (var project in missingProjects)
-            {
-                bool succeeded = true;
-                try
-                {
-                    if (_projectWrappers.All(p => p.FullName != project.FullName))
-                    {
-                        AddProjectFromFile(project.FullName);
-                    }
-                }
-                catch (Exception)
-                {
-                    succeeded = false;
-                }
-                finally
-                {
-                    if (succeeded)
-                    {
-                        Console.WriteLine(project.Name);
-                    }
-                }
-            }
-        }
-
-        private void AddProjectFromFile(string fileName)
-        {
-            var project = _dte.Solution.AddFromFile(fileName, false);
-            var wrapper = new ProjectWrapper(project);
-            _projectWrappers.Add(wrapper);
-        }
-
-        #endregion
-
-        #region Solution Open/Save/Close
-
-        private async Task OpenSolution()
-        {
-            _dte.Solution.Open(_solutionName);
-
-            await AttemptTo(CreateProjectWrappers);
-        }
-
-        private async Task SaveAsync()
-        {
-            await AttemptTo(() => SaveInternal(_solutionName));
-        }
-
-        private void SaveInternal(string filePath)
-        {
-            _dte.Solution.SaveAs(filePath);
-        }
-
-        private async Task CloseAsync()
-        {
-            await AttemptTo(CloseInternal);
-        }
-
-        private void CloseInternal()
-        {
-            _dte.Solution.Close();
-            _dte.Quit();
-        }
-
-        #endregion
-
         #region Helpers
 
         private async Task AttemptTo(Action act, int attemptsLeft = 10)
@@ -227,9 +246,13 @@ namespace EnvDTE.Helpers
                     act();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                System.Threading.Thread.Sleep(3000);
+                if (ex.Message.Contains(SolutionBusyMessage))
+                {
+                    _logger.Log("Solution busy... Waiting {0} seconds", SolutionWaitTimeInMS / 1000);
+                }
+                System.Threading.Thread.Sleep(SolutionWaitTimeInMS);
                 Task.Run(() => AttemptTo(act, attemptsLeft - 1)).Wait();
             }
         }
