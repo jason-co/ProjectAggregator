@@ -7,63 +7,90 @@
         xmlns:viewModel="clr-namespace:ProjectAggregator.ViewModel"
         mc:Ignorable="d" 
         d:DataContext="{d:DesignInstance viewModel:MainViewModel}">
-    <Grid Margin="12">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="125"/>
-            <ColumnDefinition Width="15"/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+    <Grid>
+        <Grid Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="125"/>
+                <ColumnDefinition Width="15"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <TextBlock Text="Visual Studio Version:" HorizontalAlignment="Right"/>
-        <ComboBox Grid.Column="2" Margin="0,0,0,4"
+            <TextBlock Text="Visual Studio Version:" HorizontalAlignment="Right"/>
+            <ComboBox Grid.Column="2" Margin="0,0,0,4"
                  ItemsSource="{Binding VisualStudioVersions}"
                   SelectedItem="{Binding SelectedVisualStudioVersion}"/>
 
-        <TextBlock Grid.Row="1" Text="Solution:" HorizontalAlignment="Right"/>
-        <TextBox Grid.Row="1" Grid.Column="2" IsReadOnly="True"
+            <TextBlock Grid.Row="1" Text="Solution:" HorizontalAlignment="Right"/>
+            <TextBox Grid.Row="1" Grid.Column="2" IsReadOnly="True"
                  Text="{Binding SolutionFileName}"/>
 
-        <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Margin="0,4,0,4">
-            <Button Content="Open" Padding="8,0,8,0" Margin="0,0,8,0"
+            <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Margin="0,4,0,4">
+                <Button Content="Open" Padding="8,0,8,0" Margin="0,0,8,0"
                     Command="{Binding OpenSolutionCommand}"/>
-            <Button Content="Create" Padding="8,0,8,0" Margin="0,0,8,0"
+                <Button Content="Create" Padding="8,0,8,0" Margin="0,0,8,0"
                     Command="{Binding CreateSolutionCommand}"/>
-        </StackPanel>
+            </StackPanel>
 
-        <TextBlock Grid.Row="3" Text="Root Folder:" HorizontalAlignment="Right"/>
-        <TextBox Grid.Row="3" Grid.Column="2"
+            <TextBlock Grid.Row="3" Text="Root Folder:" HorizontalAlignment="Right"/>
+            <TextBox Grid.Row="3" Grid.Column="2"
                  Text="{Binding RootFolderPath}"/>
 
-        <Button Grid.Row="4" Grid.Column="2" Content="Open" Padding="8,0,8,0" Margin="0,4,0,0"
+            <Button Grid.Row="4" Grid.Column="2" Content="Open" Padding="8,0,8,0" Margin="0,4,0,0"
                     Command="{Binding SelectFolderCommand}" HorizontalAlignment="Left"/>
 
-        <TextBlock Grid.Row="5" Text="Output:"/>
-        <ListBox Grid.Row="6" Grid.ColumnSpan="3" ItemsSource="{Binding Logger.Logs}" Loaded="ListBox_OnLoaded">
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="{x:Type ListBoxItem}">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                                <ContentPresenter Margin="8,2,4,2"/>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </ListBox.ItemContainerStyle>
-        </ListBox>
+            <TextBlock Grid.Row="5" Text="Output:"/>
+            <ListBox Grid.Row="6" Grid.ColumnSpan="3" ItemsSource="{Binding Logger.Logs}" Loaded="ListBox_OnLoaded">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                    <ContentPresenter Margin="8,2,4,2"/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
 
-        <Button Grid.Row="7" Grid.ColumnSpan="3" Content="Aggregate" Margin="0,8,0,0" Padding="4"
+            <Button Grid.Row="7" Grid.ColumnSpan="3" Content="Aggregate" Margin="0,8,0,0" Padding="4"
                 Command="{Binding AggregateCommand}"/>
+
+            <Button Grid.Row="8" Grid.ColumnSpan="3" Content="View Missing Projects" Margin="0,8,0,0" Padding="4"
+                Command="{Binding ViewMissingProjectsCommand}"/>
+
+        </Grid>
+
+        <Border Background="#66000000" Padding="12"
+                Visibility="{Binding Path=DisplayMissingProjects, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <ListBox ItemsSource="{Binding MissingProjects}">
+
+                </ListBox>
+
+                <Button Grid.Row="1" Grid.ColumnSpan="3" Content="Close" Margin="0,8,0,0" Padding="4"
+                Command="{Binding CloseMissingProjectsCommand}"/>
+            </Grid>
+        </Border>
 
     </Grid>
 </Window>
