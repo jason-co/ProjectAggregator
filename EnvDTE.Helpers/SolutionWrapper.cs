@@ -51,7 +51,6 @@ namespace EnvDTE.Helpers
         {
             _missingProjects = GetProjectsMissingFromSolution(rootPath).ToArray();
 
-            Console.WriteLine();
             if (_missingProjects.Any())
             {
                 await OpenSolution();
