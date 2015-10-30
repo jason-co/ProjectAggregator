@@ -12,7 +12,8 @@ namespace ProjectAggregator
         {
             base.OnStartup(e);
 
-            var mainViewModel = new MainViewModel();
+            var logger = new AggregatorLogger();
+            var mainViewModel = new MainViewModel(logger);
             var mainWindow = new MainWindow
             {
                 DataContext = mainViewModel

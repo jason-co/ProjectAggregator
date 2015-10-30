@@ -43,11 +43,11 @@ namespace ProjectAggregator.ViewModel
 
         #region constructor
 
-        public MainViewModel()
+        public MainViewModel(ILogger logger)
         {
             VisualStudioVersions = Enum.GetValues(typeof(VisualStudioVersion)).Cast<VisualStudioVersion>().ToArray();
             _selectedVisualStudioVersion = VisualStudioVersion.VisualStudio2015;
-            _logger = new AggregatorLogger();
+            _logger = logger;
             _missingProjects = new ObservableCollection<FileInfo>();
         }
 
