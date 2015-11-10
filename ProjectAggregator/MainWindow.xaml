@@ -77,13 +77,36 @@
 
         <Border Background="#66000000" Padding="12"
                 Visibility="{Binding Path=DisplayMissingProjects, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <Grid>
+            <Grid IsSharedSizeScope="True">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <ListBox ItemsSource="{Binding MissingProjects}">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Grid Margin="4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition  SharedSizeGroup="NameColumn"/>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Name}"/>
+                                            <TextBlock Grid.Column="2">
+                                            <Hyperlink  NavigateUri="{Binding DirectoryName}" RequestNavigate="Hyperlink_OnRequestNavigate">
+                                                <TextBlock Text="{Binding Path=DirectoryName}"/>
+                                            </Hyperlink>
+                                            </TextBlock>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
 
                 </ListBox>
 

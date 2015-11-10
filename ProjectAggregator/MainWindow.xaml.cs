@@ -1,7 +1,9 @@
 ﻿using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Navigation;
 
 namespace ProjectAggregator
 {
@@ -33,6 +35,12 @@ namespace ProjectAggregator
             {
                 _scrollViewer.ScrollToBottom();
             }
+        }
+
+        private void Hyperlink_OnRequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
         }
     }
 }

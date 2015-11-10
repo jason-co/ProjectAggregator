@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
 using Core;
@@ -56,6 +55,7 @@ namespace ProjectAggregator.ViewModel
         #region properties
 
         public ILogger Logger { get { return _logger; } }
+        public IList<FileInfo> MissingProjects {  get { return _missingProjects; } }
 
         public string SolutionFileName
         {
@@ -162,8 +162,15 @@ namespace ProjectAggregator.ViewModel
 
         private void ViewMissingProjectsExecute()
         {
+            _missingProjects.Clear();
+            if (_solutionWrapper != null)
+            {
+                foreach (var project in _solutionWrapper.MissingProjects)
+                {
+                    _missingProjects.Add(project);
+                }
+            }
             DisplayMissingProjects = true;
-            OnPropertyChanged(() => _solutionWrapper.MissingProjects);
         }
 
         private bool ViewMissingProjectsCanExecute()
