@@ -5,11 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:viewModel="clr-namespace:ProjectAggregator.ViewModel"
+        xmlns:core="clr-namespace:Core;assembly=Core"
         mc:Ignorable="d" 
         d:DataContext="{d:DesignInstance viewModel:MainViewModel}">
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-    </Window.Resources>
     <Grid>
         <Grid Margin="12">
             <Grid.ColumnDefinitions>
@@ -30,12 +28,12 @@
             </Grid.RowDefinitions>
 
             <TextBlock Text="Visual Studio Version:" HorizontalAlignment="Right"/>
-            <ComboBox Grid.Column="2" Margin="0,0,0,4"
+            <ComboBox Grid.Column="2" Margin="0,0,0,4" IsEnabled="{Binding Path=IsAggregating, Converter={x:Static core:InverseBooleanConverter.Default}}"
                  ItemsSource="{Binding VisualStudioVersions}"
                   SelectedItem="{Binding SelectedVisualStudioVersion}"/>
 
             <TextBlock Grid.Row="1" Text="Solution:" HorizontalAlignment="Right"/>
-            <TextBox Grid.Row="1" Grid.Column="2" IsReadOnly="True"
+            <TextBox Grid.Row="1" Grid.Column="2" IsReadOnly="True" IsEnabled="{Binding Path=IsAggregating, Converter={x:Static core:InverseBooleanConverter.Default}}"
                  Text="{Binding SolutionFileName}"/>
 
             <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Margin="0,4,0,4">
@@ -46,7 +44,7 @@
             </StackPanel>
 
             <TextBlock Grid.Row="3" Text="Root Folder:" HorizontalAlignment="Right"/>
-            <TextBox Grid.Row="3" Grid.Column="2"
+            <TextBox Grid.Row="3" Grid.Column="2" IsEnabled="{Binding Path=IsAggregating, Converter={x:Static core:InverseBooleanConverter.Default}}"
                  Text="{Binding RootFolderPath}"/>
 
             <Button Grid.Row="4" Grid.Column="2" Content="Open" Padding="8,0,8,0" Margin="0,4,0,0"
@@ -76,7 +74,7 @@
         </Grid>
 
         <Border Background="#66000000" Padding="12"
-                Visibility="{Binding Path=DisplayMissingProjects, Converter={StaticResource BooleanToVisibilityConverter}}">
+                Visibility="{Binding Path=DisplayMissingProjects, Converter={x:Static core:BoolToVisibilityConverter.Default}}">
             <Grid IsSharedSizeScope="True">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
@@ -107,7 +105,6 @@
                             </Setter>
                         </Style>
                     </ListBox.ItemContainerStyle>
-
                 </ListBox>
 
                 <Button Grid.Row="1" Grid.ColumnSpan="3" Content="Close" Margin="0,8,0,0" Padding="4"
